@@ -3,7 +3,7 @@
 Проект третьего семестра магистратуры «DevOps-инженер облачных сервисов».
 Исходное приложение взято из [шаблона Практикума](https://cloud-services-engineer.gitlab.students-projects.ru/practicum-cloud-services/sausage-store-3semester).
 Terraform создаёт учебную сеть, подсеть, две ВМ и группы безопасности. Ansible поднимает Vault на `vm-dev`.
-GitLab CI собирает три образа и публикует Helm-чарт в Nexus. Argo CD разворачивает его в выданном неймспейсе.
+GitLab CI собирает три образа и публикует Helm-чарт в Nexus. Argo CD разворачивает его в выданном неймспейсе. [Стенд в Argo CD](https://argocd.infra.students-projects.ru/applications/argocd/sausage-store-s3669008?view=tree)
 
 | Каталог | Содержимое |
 | --- | --- |
