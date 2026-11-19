@@ -25,7 +25,7 @@ GitLab CI собирает три образа и публикует Helm-чар
 | `TF_VAR_yc_service_account_key_file` | File с JSON-ключом сервисного аккаунта учебного каталога |
 | `TF_VAR_ssh_public_key` | Публичный SSH-ключ для пользователя `ubuntu` |
 | `TF_VAR_ssh_source_cidrs` | JSON-массив CIDR runner и оператора для TCP/22 |
-| `TF_VAR_vault_source_cidrs` | JSON-массив CIDR runner, egress учебного кластера и ревьюера для TCP/8200 |
+| `TF_VAR_vault_source_cidrs` | JSON-массив IPv4 CIDR для TCP/8200. Для учебного ревью допускается `["0.0.0.0/0"]` |
 | `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS` | File с отдельным приватным ключом и проверенной записью SSH host key `vm-dev` |
 | `VAULT_DEV_ROOT_TOKEN`, `VAULT_APP_TOKEN` | Две разные случайные hex-строки от 32 символов |
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `MONGODB_URI` | Значения для Vault. Пароль PostgreSQL от 16 символов |

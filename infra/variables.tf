@@ -52,8 +52,8 @@ variable "vault_source_cidrs" {
 
   validation {
     condition = length(var.vault_source_cidrs) > 0 && alltrue([
-      for cidr in var.vault_source_cidrs : can(cidrnetmask(cidr)) && !endswith(cidr, "/0")
+      for cidr in var.vault_source_cidrs : can(cidrnetmask(cidr))
     ])
-    error_message = "Укажите ограниченные IPv4 CIDR для Vault."
+    error_message = "Укажите непустой список IPv4 CIDR для Vault."
   }
 }
