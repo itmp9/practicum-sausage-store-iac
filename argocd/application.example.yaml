@@ -15,7 +15,8 @@ spec:
       valuesObject:
         global:
           vault:
-            host: vault.example.invalid
+            host: 192.0.2.10
+            egressCidr: 192.0.2.10/32
         frontend:
           image: example/sausage-frontend:replace-me
           ingress:

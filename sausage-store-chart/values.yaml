@@ -4,6 +4,7 @@ global:
     host: vault.example.invalid
     port: "8200"
     existingSecret: sausage-store-vault
+    egressCidr: ""
 
 frontend:
   replicas: 1
