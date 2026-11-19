@@ -105,8 +105,8 @@ ansible-deploy:
     - install -m 600 "${SSH_PRIVATE_KEY:?}" "$HOME/.ssh/training_key"
     - cd ../ansible
     - ansible-galaxy collection install -r requirements.yml
-    - ansible-playbook --private-key "$HOME/.ssh/training_key" vault-playbook.yml
-    - curl --fail --silent --show-error --output /dev/null --max-time 10 "http://$VAULT_VM_ADDRESS:8200/v1/sys/health"
+    - ANSIBLE_CONFIG="$PWD/ansible.cfg" ansible-playbook -i inventory/vm.yml --private-key "$HOME/.ssh/training_key" vault-playbook.yml
+    - curl --noproxy '*' --fail --silent --show-error --output /dev/null --max-time 10 "http://$VAULT_VM_ADDRESS:8200/v1/sys/health"
   rules:
     - if: '$OPERATION == "ansible"'
 
@@ -132,11 +132,14 @@ build-and-push-images:
   before_script:
     - mkdir -p /kaniko/.docker
     - |
-      umask 077
-      auth="$(printf '%s:%s' "${DOCKER_USER:?}" "${DOCKER_PASSWORD:?}" | base64 | tr -d '\n')"
-      printf '{"auths":{"https://index.docker.io/v1/":{"auth":"%s"}}}\n' "$auth" > /kaniko/.docker/config.json
+      (
+        umask 077
+        auth="$(printf '%s:%s' "${DOCKER_USER:?}" "${DOCKER_PASSWORD:?}" | base64 | tr -d '\n')"
+        printf '{"auths":{"https://index.docker.io/v1/":{"auth":"%s"}}}\n' "$auth" > /kaniko/.docker/config.json
+      )
   script:
     - |
+      umask 022
       /kaniko/executor \
         --context "$CI_PROJECT_DIR/$COMPONENT" \
         --dockerfile "$CI_PROJECT_DIR/$COMPONENT/Dockerfile" \
