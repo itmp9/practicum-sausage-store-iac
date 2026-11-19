@@ -1,0 +1,113 @@
+---
+- name: Start Vault in dev mode
+  community.docker.docker_container:
+    name: training-vault
+    image: "{{ vault_image }}"
+    state: started
+    restart_policy: unless-stopped
+    published_ports:
+      - "{{ vault_port }}:8200"
+    env:
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+      VAULT_DEV_ROOT_TOKEN_ID: "{{ vault_root_token }}"
+    command: server -dev
+  no_log: true
+
+- name: Verify Vault is initialized and unsealed
+  ansible.builtin.uri:
+    url: "{{ vault_local_url }}/v1/sys/health"
+    status_code: 200
+  register: vault_health
+  until:
+    - vault_health.status == 200
+    - vault_health.json.initialized | bool
+    - not (vault_health.json.sealed | bool)
+  retries: 25
+  delay: 2
+
+- name: Configure application access and KV v2
+  module_defaults:
+    ansible.builtin.uri:
+      headers:
+        X-Vault-Token: "{{ vault_root_token }}"
+      body_format: json
+  no_log: true
+  block:
+    - name: Read current mounts
+      ansible.builtin.uri:
+        url: "{{ vault_local_url }}/v1/sys/mounts"
+      register: vault_mounts
+
+    - name: Mount KV v2 under kv
+      ansible.builtin.uri:
+        url: "{{ vault_local_url }}/v1/sys/mounts/kv"
+        method: POST
+        body:
+          type: kv
+          options:
+            version: "2"
+        status_code: 204
+      when: "'kv/' not in vault_mounts.json.data"
+
+    - name: Read existing application configuration
+      ansible.builtin.uri:
+        url: "{{ vault_local_url }}/v1/kv/data/sausage-store"
+        status_code: [200, 404]
+      register: vault_previous
+
+    - name: Write database access details
+      vars:
+        desired_config:
+          spring.datasource.username: "{{ vault_postgres_user }}"
+          spring.datasource.password: "{{ vault_postgres_password }}"
+          spring.data.mongodb.uri: "{{ vault_mongodb_uri }}"
+      ansible.builtin.uri:
+        url: "{{ vault_local_url }}/v1/kv/data/sausage-store"
+        method: POST
+        body:
+          data: "{{ desired_config }}"
+        status_code: 200
+      when: vault_previous.status == 404 or vault_previous.json.data.data != desired_config
+
+    - name: Install application policy
+      ansible.builtin.uri:
+        url: "{{ vault_local_url }}/v1/sys/policies/acl/sausage-store"
+        method: PUT
+        body:
+          policy: |
+            path "kv/data/sausage-store" {
+              capabilities = ["read"]
+            }
+        status_code: 204
+
+    - name: Look up the preselected application token
+      ansible.builtin.uri:
+        url: "{{ vault_local_url }}/v1/auth/token/lookup"
+        method: POST
+        body:
+          token: "{{ vault_app_token }}"
+        status_code: [200, 400, 403]
+      register: vault_app_token_lookup
+
+    - name: Issue a restricted application token
+      ansible.builtin.uri:
+        url: "{{ vault_local_url }}/v1/auth/token/create"
+        method: POST
+        body:
+          id: "{{ vault_app_token }}"
+          display_name: sausage-store
+          policies:
+            - sausage-store
+          no_parent: true
+          renewable: true
+          period: 168h
+        status_code: 200
+      when: vault_app_token_lookup.status != 200
+
+- name: Verify the application token can read the required path
+  ansible.builtin.uri:
+    url: "{{ vault_local_url }}/v1/kv/data/sausage-store"
+    headers:
+      X-Vault-Token: "{{ vault_app_token }}"
+    status_code: 200
+  no_log: true

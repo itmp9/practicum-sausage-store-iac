@@ -1,0 +1,7 @@
+all:
+  children:
+    vault:
+      hosts:
+        vm-dev:
+          ansible_host: "{{ lookup('ansible.builtin.env', 'VAULT_VM_ADDRESS') }}"
+          ansible_user: ubuntu

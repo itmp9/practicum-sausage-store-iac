@@ -1,0 +1,13 @@
+metadata:
+  id: CKV2_YC_1001
+  name: Ensure Yandex Compute instances have labels
+  category: CONVENTION
+  severity: MEDIUM
+scope:
+  provider: yandex
+definition:
+  cond_type: attribute
+  resource_types:
+    - yandex_compute_instance
+  attribute: labels
+  operator: exists

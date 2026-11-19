@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sausage-store-student
+spec:
+  project: student
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ep-namespace-replace-me
+  source:
+    repoURL: https://nexus.infra.students-projects.ru/repository/student-helm/
+    chart: sausage-store
+    targetRevision: "1.0.2"
+    helm:
+      valuesObject:
+        global:
+          vault:
+            host: vault.example.invalid
+        frontend:
+          image: example/sausage-frontend:replace-me
+          ingress:
+            host: student.2sem.students-projects.ru
+        backend:
+          image: example/sausage-backend:replace-me
+        backend-report:
+          image: example/sausage-backend-report:replace-me
+  syncPolicy:
+    automated:
+      selfHeal: true

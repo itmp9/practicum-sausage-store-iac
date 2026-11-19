@@ -1,0 +1,26 @@
+---
+- name: Deploy the training Vault on vm-dev
+  hosts: vault
+  become: true
+  gather_facts: false
+  pre_tasks:
+    - name: Validate deployment inputs
+      ansible.builtin.assert:
+        that:
+          - ansible_host | length > 0
+          - vault_root_token is match('^[a-f0-9]{32,}$')
+          - vault_app_token is match('^[a-f0-9]{32,}$')
+          - vault_app_token != vault_root_token
+          - vault_postgres_user | length > 0
+          - vault_postgres_password | length >= 16
+          - vault_mongodb_uri is match('^mongodb://')
+        fail_msg: Check VAULT_VM_ADDRESS and the protected Vault and database inputs.
+      no_log: true
+
+    - name: Wait for SSH
+      ansible.builtin.wait_for_connection:
+        timeout: 180
+
+  roles:
+    - docker
+    - vault

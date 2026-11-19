@@ -1,0 +1,9 @@
+---
+vault_image: hashicorp/vault:1.20.4
+vault_port: 8200
+vault_local_url: "http://127.0.0.1:{{ vault_port }}"
+vault_root_token: "{{ lookup('ansible.builtin.env', 'VAULT_DEV_ROOT_TOKEN') }}"
+vault_app_token: "{{ lookup('ansible.builtin.env', 'VAULT_APP_TOKEN') }}"
+vault_postgres_user: "{{ lookup('ansible.builtin.env', 'POSTGRES_USER') }}"
+vault_postgres_password: "{{ lookup('ansible.builtin.env', 'POSTGRES_PASSWORD') }}"
+vault_mongodb_uri: "{{ lookup('ansible.builtin.env', 'MONGODB_URI') }}"

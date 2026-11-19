@@ -1,0 +1,97 @@
+global:
+  imagePullPolicy: Always
+  vault:
+    host: vault.example.invalid
+    port: "8200"
+    existingSecret: sausage-store-vault
+
+frontend:
+  replicas: 1
+  revisionHistoryLimit: 15
+  strategy:
+    type: Recreate
+  service:
+    port: 80
+  ingress:
+    host: student.2sem.students-projects.ru
+    path: /
+    pathType: Prefix
+    className: nginx
+    tlsSecretName: 2sem-students-projects-wildcard-secret
+  containerPort: 80
+  image: example/sausage-frontend:replace-me
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "128Mi"
+      cpu: "1"
+  nginxConf: nginx.conf
+
+backend:
+  annotations:
+    path: /actuator/prometheus
+    port: "8080"
+    scrape: "true"
+  env:
+    postgresUri: jdbc:postgresql://postgresql:5432/sausage-store
+    reportPath: /logs/reports
+    logPath: /logs
+  service:
+    port: 8080
+  revisionHistoryLimit: 15
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 20%
+  image: example/sausage-backend:replace-me
+  imagePullPolicy: Always
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "1"
+  containerPort: 8080
+  livenessProbe:
+    httpGet:
+      path: /actuator/health
+      port: 8080
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 6
+
+backend-report:
+  replicas: 1
+  revisionHistoryLimit: 15
+  strategy:
+    type: Recreate
+  env:
+    port: 8080
+  existingMongoSecret: sausage-store-mongo-app
+  image: example/sausage-backend-report:replace-me
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "0.1"
+    limits:
+      memory: "256Mi"
+      cpu: "0.2"
+  containerPort: 8080
+
+
+infra:
+  postgresql:
+    existingSecret: sausage-store-postgres
+    database: sausage-store
+    containerPort: 5432
+  mongodb:
+    existingRootSecret: sausage-store-mongo-root
+    existingAppSecret: sausage-store-mongo-app
+    database: sausage-store
+    containerPort: 27017

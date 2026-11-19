@@ -1,0 +1,13 @@
+.env
+.github
+authorized_key.json
+infra/.terraform*
+*.tfstate
+*.tfstate.*
+*.tfplan
+!infra/.terraform.lock.hcl
+/ansible/generated/
+/argocd/application.local.yaml
+/dist/
+*.pem
+*.key
