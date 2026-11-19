@@ -18,7 +18,7 @@ frontend:
     pathType: Prefix
     className: nginx
     tlsSecretName: 2sem-students-projects-wildcard-secret
-  containerPort: 80
+  containerPort: 8080
   image: example/sausage-frontend:replace-me
   resources:
     requests:
