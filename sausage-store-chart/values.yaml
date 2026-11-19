@@ -43,10 +43,7 @@ backend:
   revisionHistoryLimit: 15
   replicas: 1
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 50%
-      maxSurge: 20%
+    type: Recreate
   image: example/sausage-backend:replace-me
   imagePullPolicy: Always
   resources:
