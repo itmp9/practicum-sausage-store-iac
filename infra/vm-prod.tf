@@ -16,8 +16,8 @@ resource "yandex_compute_instance" "vm_prod" {
   boot_disk {
     initialize_params {
       image_id = data.yandex_compute_image.ubuntu.id
-      type     = "network-hdd"
-      size     = 15
+      type     = "network-ssd"
+      size     = 10
     }
   }
 
